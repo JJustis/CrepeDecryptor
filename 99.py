@@ -957,6 +957,8 @@ class AESMLTrainingSystem:
     
     def _train_classifier(self, epochs: int) -> float:
         """Train the plaintext classifier"""
+        self._fix_plaintext_features_length()
+        self._fix_plaintext_features_length()
         features = np.array(self.training_data.plaintext_features, dtype=np.float32)
         targets = np.array(self.training_data.success_indicators, dtype=np.float32)
         
@@ -2077,7 +2079,7 @@ class AdvancedEnsembleAESAttacker:
             if result.success and result.accuracy_score > 0.95:
                 print(f"\n🎉 ENSEMBLE ATTACK SUCCESS!")
                 print(f"🤖 Winning method: {result.attack_method}")
-                print(f"✅ Perfect decryption: '{result.decrypted_message.decode()}'")
+                print(f"✅ Perfect decryption: '{result.decrypted_data.decode()}'")
                 print(f"🧠 Method used neural networks and cross-learning")
                 return result
             
@@ -2184,7 +2186,7 @@ class AdvancedEnsembleAESAttacker:
             if i % 100 == 0 and i > 0:
                 print(f"   Tried {i} priority keys...")
             
-            result = self.attempt_decryption(key_candidate, "priority_pattern")
+            result = self.attempt_decryption_with_learning(key_candidate, "priority_pattern")
             
             if result.success and result.accuracy_score > 0.9:
                 print(f"✅ Priority attack SUCCESS!")
@@ -2230,7 +2232,7 @@ class AdvancedEnsembleAESAttacker:
                     key_candidate = self.brute_force.generate_random_key()
                     method = "numpy_ml_random"
             
-            result = self.attempt_decryption(key_candidate, method)
+            result = self.attempt_decryption_with_learning(key_candidate, method)
             
             if result.success and result.accuracy_score > 0.5:
                 successful_keys.append(key_candidate)
@@ -2252,7 +2254,7 @@ class AdvancedEnsembleAESAttacker:
                 print(f"   Brute force attempt {i}/{max_attempts}...")
             
             key_candidate = self.brute_force.generate_random_key()
-            result = self.attempt_decryption(key_candidate, "brute_force")
+            result = self.attempt_decryption_with_learning(key_candidate, "brute_force")
             
             if result.success and result.accuracy_score > 0.9:
                 print(f"✅ Brute force SUCCESS!")
@@ -2309,7 +2311,7 @@ class AdvancedEnsembleAESAttacker:
                         key = self.brute_force.generate_random_key()
                         method = f"brute_phase_{phase}"
                 
-                result = self.attempt_decryption(key, method)
+                result = self.attempt_decryption_with_learning(key, method)
                 phase_attempts += 1
                 
                 # Check for success
@@ -2360,229 +2362,229 @@ class AdvancedEnsembleAESAttacker:
         return self.ml_system.save_training_data()
 
 def create_test_scenario(key_size: int = 256) -> Tuple[EncryptedPackage, str, str]:
-    """Create a test scenario with known plaintext and key"""
-    
-    # Create test data
-    test_messages = [
-        "This is a secret message that needs to be encrypted using AES-CBC encryption.",
-        "The quick brown fox jumps over the lazy dog. This is a test of AES encryption.",
-        "Confidential data: User password is admin123, API key is secret_key_12345",
-        "Meeting notes: Project deadline is December 31st. Budget approved for $50,000.",
-        "System logs: Login successful for user@domain.com at 2024-01-15 14:30:22"
-    ]
-    
-    plaintext = random.choice(test_messages)
-    
-    # Create encryption system
-    config = AESConfig(key_size=key_size)
-    constraints = KeyConstraints()
-    crypto_engine = AESCryptographyEngine(config)
-    
-    # Generate a test key (following constraints)
-    test_key = crypto_engine.generate_key(constraints)
-    
-    # Encrypt the message
-    package = crypto_engine.encrypt_data(plaintext, test_key)
-    
-    return package, plaintext, test_key
+        """Create a test scenario with known plaintext and key"""
+        
+        # Create test data
+        test_messages = [
+            "This is a secret message that needs to be encrypted using AES-CBC encryption.",
+            "The quick brown fox jumps over the lazy dog. This is a test of AES encryption.",
+            "Confidential data: User password is admin123, API key is secret_key_12345",
+            "Meeting notes: Project deadline is December 31st. Budget approved for $50,000.",
+            "System logs: Login successful for user@domain.com at 2024-01-15 14:30:22"
+        ]
+        
+        plaintext = random.choice(test_messages)
+        
+        # Create encryption system
+        config = AESConfig(key_size=key_size)
+        constraints = KeyConstraints()
+        crypto_engine = AESCryptographyEngine(config)
+        
+        # Generate a test key (following constraints)
+        test_key = crypto_engine.generate_key(constraints)
+        
+        # Encrypt the message
+        package = crypto_engine.encrypt_data(plaintext, test_key)
+        
+        return package, plaintext, test_key
 
 def demonstrate_aes_cryptanalysis():
-    """Demonstrate the Pure NumPy AES cryptanalysis system"""
-    
-    print("🔓 AES-CBC PURE NUMPY NEURAL NETWORK CRYPTANALYSIS")
-    print("=" * 80)
-    print("🧠 Advanced ML-powered attack using PURE NUMPY neural networks")
-    print("💻 CPU-based neural networks with intelligent brute force")
-    print("🎯 Features:")
-    print("   • Pure NumPy neural network implementation")
-    print("   • Key prediction with feedforward networks")
-    print("   • Plaintext classification")
-    print("   • Pattern learning")
-    print("   • Intelligent brute force with constraints")
-    print("   • ML-guided key generation")
-    print("   • Training data persistence")
-    print("   • Real AES-CBC-256/128 encryption")
-    print("   • NO PYTORCH DEPENDENCY!")
-    print()
-    
-    if not CRYPTO_AVAILABLE:
-        print("❌ PyCryptodome required! Install with: pip install pycryptodome")
-        return
-    
-    if not NUMPY_AVAILABLE:
-        print("❌ NumPy required! Install with: pip install numpy")
-        return
-    
-    print("🔧 Creating test scenario...")
-    
-    # Ask user for key size
-    try:
-        key_choice = input("Select key size (1=AES-128, 2=AES-256) [2]: ").strip()
-        key_size = 128 if key_choice == "1" else 256
-    except (EOFError, KeyboardInterrupt):
-        key_size = 256
-    
-    # Create test scenario
-    package, known_plaintext, actual_key = create_test_scenario(key_size)
-    
-    print(f"\n📋 Test Scenario Created:")
-    print(f"   Algorithm: AES-CBC-{key_size}")
-    print(f"   Plaintext: '{known_plaintext}'")
-    print(f"   Actual key: {actual_key}")
-    print(f"   Ciphertext length: {len(package.ciphertext)} bytes")
-    print(f"   IV: {package.iv.hex()}")
-    
-    # Verify encryption works
-    crypto_engine = AESCryptographyEngine(AESConfig(key_size=key_size))
-    success, decrypted = crypto_engine.decrypt_data(package, actual_key)
-    print(f"   Encryption test: {'✅ SUCCESS' if success and decrypted == known_plaintext else '❌ FAILED'}")
-    
-    if not success or decrypted != known_plaintext:
-        print("❌ Encryption test failed - aborting demo")
-        return
-    
-    # Initialize attacker
-    print(f"\n🎯 Initializing Pure NumPy AES Cryptanalysis Attacker...")
-    
-    # Ask if we should provide known plaintext hint
-    try:
-        hint_choice = input("Provide known plaintext hint? (y/N): ").strip().lower()
-        use_hint = hint_choice in ['y', 'yes']
-    except (EOFError, KeyboardInterrupt):
-        use_hint = False
-    
-    attacker = AESCryptanalysisAttacker(
-        target_package=package,
-        known_plaintext=known_plaintext if use_hint else ""
-    )
-    
-    # Attack mode selection
-    print(f"\n🚀 SELECT ATTACK MODE:")
-    print("1. 🎯 Priority Pattern Attack (1K attempts)")
-    print("2. 🧠 Pure NumPy ML-Guided Attack (5K attempts)")  
-    print("3. 💥 Brute Force Attack (10K attempts)")
-    print("4. 🔄 Unlimited Attack (runs until success)")
-    print("5. 🎲 Demo Mode (all methods, quick)")
-    
-    try:
-        choice = input("Enter choice (1-5) [4]: ").strip()
-        if not choice:
+        """Demonstrate the Pure NumPy AES cryptanalysis system"""
+        
+        print("🔓 AES-CBC PURE NUMPY NEURAL NETWORK CRYPTANALYSIS")
+        print("=" * 80)
+        print("🧠 Advanced ML-powered attack using PURE NUMPY neural networks")
+        print("💻 CPU-based neural networks with intelligent brute force")
+        print("🎯 Features:")
+        print("   • Pure NumPy neural network implementation")
+        print("   • Key prediction with feedforward networks")
+        print("   • Plaintext classification")
+        print("   • Pattern learning")
+        print("   • Intelligent brute force with constraints")
+        print("   • ML-guided key generation")
+        print("   • Training data persistence")
+        print("   • Real AES-CBC-256/128 encryption")
+        print("   • NO PYTORCH DEPENDENCY!")
+        print()
+        
+        if not CRYPTO_AVAILABLE:
+            print("❌ PyCryptodome required! Install with: pip install pycryptodome")
+            return
+        
+        if not NUMPY_AVAILABLE:
+            print("❌ NumPy required! Install with: pip install numpy")
+            return
+        
+        print("🔧 Creating test scenario...")
+        
+        # Ask user for key size
+        try:
+            key_choice = input("Select key size (1=AES-128, 2=AES-256) [2]: ").strip()
+            key_size = 128 if key_choice == "1" else 256
+        except (EOFError, KeyboardInterrupt):
+            key_size = 256
+        
+        # Create test scenario
+        package, known_plaintext, actual_key = create_test_scenario(key_size)
+        
+        print(f"\n📋 Test Scenario Created:")
+        print(f"   Algorithm: AES-CBC-{key_size}")
+        print(f"   Plaintext: '{known_plaintext}'")
+        print(f"   Actual key: {actual_key}")
+        print(f"   Ciphertext length: {len(package.ciphertext)} bytes")
+        print(f"   IV: {package.iv.hex()}")
+        
+        # Verify encryption works
+        crypto_engine = AESCryptographyEngine(AESConfig(key_size=key_size))
+        success, decrypted = crypto_engine.decrypt_data(package, actual_key)
+        print(f"   Encryption test: {'✅ SUCCESS' if success and decrypted == known_plaintext else '❌ FAILED'}")
+        
+        if not success or decrypted != known_plaintext:
+            print("❌ Encryption test failed - aborting demo")
+            return
+        
+        # Initialize attacker
+        print(f"\n🎯 Initializing Pure NumPy AES Cryptanalysis Attacker...")
+        
+        # Ask if we should provide known plaintext hint
+        try:
+            hint_choice = input("Provide known plaintext hint? (y/N): ").strip().lower()
+            use_hint = hint_choice in ['y', 'yes']
+        except (EOFError, KeyboardInterrupt):
+            use_hint = False
+        
+        attacker = AdvancedEnsembleAESAttacker(
+            target_package=package,
+            known_plaintext=known_plaintext if use_hint else ""
+        )
+        
+        # Attack mode selection
+        print(f"\n🚀 SELECT ATTACK MODE:")
+        print("1. 🎯 Priority Pattern Attack (1K attempts)")
+        print("2. 🧠 Pure NumPy ML-Guided Attack (5K attempts)")  
+        print("3. 💥 Brute Force Attack (10K attempts)")
+        print("4. 🔄 Unlimited Attack (runs until success)")
+        print("5. 🎲 Demo Mode (all methods, quick)")
+        
+        try:
+            choice = input("Enter choice (1-5) [4]: ").strip()
+            if not choice:
+                choice = "4"
+        except (EOFError, KeyboardInterrupt):
             choice = "4"
-    except (EOFError, KeyboardInterrupt):
-        choice = "4"
-    
-    print(f"\n🚀 STARTING PURE NUMPY AES CRYPTANALYSIS ATTACK")
-    print("=" * 60)
-    print(f"🎯 Target: AES-CBC-{key_size}")
-    print(f"📊 Known plaintext: {'Yes' if use_hint else 'No'}")
-    print(f"🔑 Actual key (hidden): {actual_key}")
-    print(f"🧠 Neural Networks: Pure NumPy implementation")
-    
-    start_time = time.time()
-    
-    try:
-        if choice == "1":
-            print(f"\n🎯 MODE 1: PRIORITY PATTERN ATTACK")
-            result = attacker.priority_attack(max_attempts=1000)
-            
-        elif choice == "2":
-            print(f"\n🧠 MODE 2: PURE NUMPY ML-GUIDED ATTACK")
-            result = attacker.ml_guided_attack(max_attempts=5000)
-            
-        elif choice == "3":
-            print(f"\n💥 MODE 3: BRUTE FORCE ATTACK")
-            result = attacker.brute_force_attack(max_attempts=10000)
-            
-        elif choice == "4":
-            print(f"\n🔄 MODE 4: UNLIMITED ATTACK")
-            result = attacker.unlimited_attack(verbose=True)
-            
-        else:  # Demo mode
-            print(f"\n🎲 MODE 5: DEMO MODE")
-            print("Running all attack methods quickly...")
-            
-            # Quick priority attack
-            print("\n1️⃣ Priority patterns...")
-            result1 = attacker.priority_attack(max_attempts=100)
-            
-            # Quick ML attack
-            print("\n2️⃣ Pure NumPy ML-guided...")
-            result2 = attacker.ml_guided_attack(max_attempts=500)
-            
-            # Quick brute force
-            print("\n3️⃣ Brute force...")
-            result3 = attacker.brute_force_attack(max_attempts=1000)
-            
-            # Best result
-            results = [r for r in [result1, result2, result3] if r]
-            result = max(results, key=lambda x: x.accuracy_score) if results else None
-    
-    except KeyboardInterrupt:
-        print(f"\n⚠️ Attack interrupted by user")
-        result = attacker.best_result
-    
-    # Save progress
-    attacker.save_progress()
-    
-    # Final analysis
-    elapsed_time = time.time() - start_time
-    summary = attacker.get_attack_summary()
-    
-    print(f"\n" + "🏆" * 20 + " PURE NUMPY RESULTS " + "🏆" * 20)
-    
-    if result and result.success and result.accuracy_score > 0.9:
-        print(f"🎉 PURE NUMPY ATTACK SUCCESSFUL!")
-        print(f"✅ Key found: {result.key_candidate}")
-        print(f"✅ Matches actual: {result.key_candidate.lower() == actual_key.lower()}")
-        print(f"📝 Decrypted text: '{result.plaintext_preview}'")
-        security_status = "BROKEN BY PURE NUMPY"
-    else:
-        print(f"⚠️ Attack incomplete")
-        if result:
-            print(f"📈 Best accuracy: {result.accuracy_score:.1%}")
-            print(f"🔑 Best key candidate: {result.key_candidate}")
-            print(f"📝 Best decryption: '{result.plaintext_preview}'")
-        security_status = f"PARTIALLY TESTED ({result.accuracy_score:.1%})" if result else "SECURE"
-    
-    print(f"\n📊 Attack Statistics:")
-    print(f"   🔄 Total attempts: {summary['total_attempts']:,}")
-    print(f"   ⏱️ Time taken: {elapsed_time:.1f} seconds")
-    print(f"   ⚡ Rate: {summary['attempts_per_second']:.1f} attempts/sec")
-    print(f"   🧠 ML examples collected: {summary['ml_examples']}")
-    print(f"   🎯 Methods used: {', '.join(summary['attack_methods_used'])}")
-    
-    print(f"\n🧠 Pure NumPy Machine Learning Analysis:")
-    print(f"   📚 Training examples: {attacker.ml_system.training_data.total_examples}")
-    print(f"   🔄 Training sessions: {attacker.ml_system.training_data.session_count}")
-    print(f"   📈 Neural networks: Pure NumPy implementation")
-    print(f"     • Key predictor with multiple output heads")
-    print(f"     • Plaintext classifier with sigmoid output")
-    print(f"     • Pattern learner with feedforward architecture")
-    print(f"   💾 Training data saved for future sessions")
-    print(f"   ⚡ No PyTorch dependency required!")
-    
-    print(f"\n🛡️ Security Assessment:")
-    print(f"   Algorithm: AES-CBC-{key_size}")
-    print(f"   Status: {security_status}")
-    print(f"   Method: Pure NumPy neural networks + intelligent brute force")
-    
-    if result and result.success:
-        print(f"   Result: ❌ Encryption broken by Pure NumPy ML attack")
-        print(f"   Implication: Key was vulnerable to pattern analysis")
-    else:
-        print(f"   Result: ✅ Encryption withstood attack")
-        print(f"   Implication: Key appears resistant to current methods")
-    
-    print(f"\n💡 Pure NumPy Implementation Notes:")
-    print(f"   🧠 Neural networks implemented from scratch")
-    print(f"   📈 Adam optimizer with custom implementation")
-    print(f"   🔢 Forward and backward propagation in pure NumPy")
-    print(f"   ⚡ No external ML library dependencies")
-    print(f"   📊 Demonstrates ML fundamentals without black boxes")
-    
-    print(f"\n🏁 Pure NumPy AES cryptanalysis demonstration complete!")
-    
-    return summary
+        
+        print(f"\n🚀 STARTING PURE NUMPY AES CRYPTANALYSIS ATTACK")
+        print("=" * 60)
+        print(f"🎯 Target: AES-CBC-{key_size}")
+        print(f"📊 Known plaintext: {'Yes' if use_hint else 'No'}")
+        print(f"🔑 Actual key (hidden): {actual_key}")
+        print(f"🧠 Neural Networks: Pure NumPy implementation")
+        
+        start_time = time.time()
+        
+        try:
+            if choice == "1":
+                print(f"\n🎯 MODE 1: PRIORITY PATTERN ATTACK")
+                result = attacker.priority_attack(max_attempts=1000)
+                
+            elif choice == "2":
+                print(f"\n🧠 MODE 2: PURE NUMPY ML-GUIDED ATTACK")
+                result = attacker.ml_guided_attack(max_attempts=5000)
+                
+            elif choice == "3":
+                print(f"\n💥 MODE 3: BRUTE FORCE ATTACK")
+                result = attacker.brute_force_attack(max_attempts=10000)
+                
+            elif choice == "4":
+                print(f"\n🔄 MODE 4: UNLIMITED ATTACK")
+                result = attacker.unlimited_attack(verbose=True)
+                
+            else:  # Demo mode
+                print(f"\n🎲 MODE 5: DEMO MODE")
+                print("Running all attack methods quickly...")
+                
+                # Quick priority attack
+                print("\n1️⃣ Priority patterns...")
+                result1 = attacker.priority_attack(max_attempts=100)
+                
+                # Quick ML attack
+                print("\n2️⃣ Pure NumPy ML-guided...")
+                result2 = attacker.ml_guided_attack(max_attempts=500)
+                
+                # Quick brute force
+                print("\n3️⃣ Brute force...")
+                result3 = attacker.brute_force_attack(max_attempts=1000)
+                
+                # Best result
+                results = [r for r in [result1, result2, result3] if r]
+                result = max(results, key=lambda x: x.accuracy_score) if results else None
+        
+        except KeyboardInterrupt:
+            print(f"\n⚠️ Attack interrupted by user")
+            result = attacker.best_result
+        
+        # Save progress
+        attacker.save_progress()
+        
+        # Final analysis
+        elapsed_time = time.time() - start_time
+        summary = attacker.get_attack_summary()
+        
+        print(f"\n" + "🏆" * 20 + " PURE NUMPY RESULTS " + "🏆" * 20)
+        
+        if result and result.success and result.accuracy_score > 0.9:
+            print(f"🎉 PURE NUMPY ATTACK SUCCESSFUL!")
+            print(f"✅ Key found: {result.key_candidate}")
+            print(f"✅ Matches actual: {result.key_candidate.lower() == actual_key.lower()}")
+            print(f"📝 Decrypted text: '{result.plaintext_preview}'")
+            security_status = "BROKEN BY PURE NUMPY"
+        else:
+            print(f"⚠️ Attack incomplete")
+            if result:
+                print(f"📈 Best accuracy: {result.accuracy_score:.1%}")
+                print(f"🔑 Best key candidate: {result.key_candidate}")
+                print(f"📝 Best decryption: '{result.plaintext_preview}'")
+            security_status = f"PARTIALLY TESTED ({result.accuracy_score:.1%})" if result else "SECURE"
+        
+        print(f"\n📊 Attack Statistics:")
+        print(f"   🔄 Total attempts: {summary['total_attempts']:,}")
+        print(f"   ⏱️ Time taken: {elapsed_time:.1f} seconds")
+        print(f"   ⚡ Rate: {summary['attempts_per_second']:.1f} attempts/sec")
+        print(f"   🧠 ML examples collected: {summary['ml_examples']}")
+        print(f"   🎯 Methods used: {', '.join(summary['attack_methods_used'])}")
+        
+        print(f"\n🧠 Pure NumPy Machine Learning Analysis:")
+        print(f"   📚 Training examples: {attacker.ml_system.training_data.total_examples}")
+        print(f"   🔄 Training sessions: {attacker.ml_system.training_data.session_count}")
+        print(f"   📈 Neural networks: Pure NumPy implementation")
+        print(f"     • Key predictor with multiple output heads")
+        print(f"     • Plaintext classifier with sigmoid output")
+        print(f"     • Pattern learner with feedforward architecture")
+        print(f"   💾 Training data saved for future sessions")
+        print(f"   ⚡ No PyTorch dependency required!")
+        
+        print(f"\n🛡️ Security Assessment:")
+        print(f"   Algorithm: AES-CBC-{key_size}")
+        print(f"   Status: {security_status}")
+        print(f"   Method: Pure NumPy neural networks + intelligent brute force")
+        
+        if result and result.success:
+            print(f"   Result: ❌ Encryption broken by Pure NumPy ML attack")
+            print(f"   Implication: Key was vulnerable to pattern analysis")
+        else:
+            print(f"   Result: ✅ Encryption withstood attack")
+            print(f"   Implication: Key appears resistant to current methods")
+        
+        print(f"\n💡 Pure NumPy Implementation Notes:")
+        print(f"   🧠 Neural networks implemented from scratch")
+        print(f"   📈 Adam optimizer with custom implementation")
+        print(f"   🔢 Forward and backward propagation in pure NumPy")
+        print(f"   ⚡ No external ML library dependencies")
+        print(f"   📊 Demonstrates ML fundamentals without black boxes")
+        
+        print(f"\n🏁 Pure NumPy AES cryptanalysis demonstration complete!")
+        
+        return summary
 
 if __name__ == "__main__":
     # Set random seeds for reproducible results
